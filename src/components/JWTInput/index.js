@@ -4,6 +4,8 @@ import {
   TextField,
   InputAdornment,
   Button,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 
 import { VpnKeyRounded } from "@mui/icons-material";
@@ -16,8 +18,25 @@ class JWTInput extends React.Component {
     super(props);
     this.state = {
       accesscode: "",
+      snackbar: false,
+      snackbar_msg: "",
+      snackbar_severity: "success",
     };
     this.onChange = this.onChange.bind(this);
+    this.handleOpen = this.handleOpen.bind(this);
+    this.handleClose = this.handleClose.bind(this);
+  }
+
+  handleOpen(msg, severity) {
+    this.setState({
+      snackbar_msg: msg,
+      snackbar_severity: severity,
+      snackbar: true,
+    });
+  }
+
+  handleClose(e) {
+    this.setState({ snackbar: false });
   }
 
   onChange(e) {
@@ -29,9 +48,14 @@ class JWTInput extends React.Component {
       const data = await axios.post(API_ROOT + "/access", {
         accesscode: this.state.accesscode,
       });
-      console.log(data.data.jwtToken);
+      this.handleOpen(
+        "Kode akses diterima, anda telah terautentikasi",
+        "success"
+      );
+      localStorage.setItem("jwt_token", data.data.jwtToken);
     } catch (err) {
       console.log(err.response.data.ErrorMessage);
+      this.handleOpen(err.response.data.ErrorMessage, "error");
     }
   };
 
@@ -69,6 +93,15 @@ class JWTInput extends React.Component {
             </Grid>
           </Grid>
         </Container>
+        <Snackbar
+          open={this.state.snackbar}
+          autoHideDuration={5000}
+          onClose={this.handleClose}
+        >
+          <Alert severity={this.state.snackbar_severity} sx={{ width: "100%" }}>
+            {this.state.snackbar_msg}
+          </Alert>
+        </Snackbar>
       </div>
     );
   }
