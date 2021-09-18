@@ -1,6 +1,7 @@
 import { CssBaseline } from "@mui/material";
 import "./App.css";
 import JWTInput from "./components/JWTInput";
+import ListBarang from "./components/ListBarang";
 // import { makeStyles } from "@mui/styles";
 
 // const useStyles = makeStyles({
@@ -17,6 +18,7 @@ function App() {
       <CssBaseline />
       <main>
         <JWTInput />
+        <ListBarang />
       </main>
     </>
   );

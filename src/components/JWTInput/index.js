@@ -54,7 +54,6 @@ class JWTInput extends React.Component {
       );
       localStorage.setItem("jwt_token", data.data.jwtToken);
     } catch (err) {
-      console.log(err.response.data.ErrorMessage);
       this.handleOpen(err.response.data.ErrorMessage, "error");
     }
   };
