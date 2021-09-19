@@ -40,6 +40,8 @@ class ListBarang extends React.Component {
       snackbar_severity: "success",
 
       createModal: false,
+      updateModal: false,
+      id: "",
       nama: "",
       hargaBeli: "",
       hargaJual: "",
@@ -57,6 +59,11 @@ class ListBarang extends React.Component {
     this.createModalClose = this.createModalClose.bind(this);
     this.createModalChange = this.createModalChange.bind(this);
     this.createModalFile = this.createModalFile.bind(this);
+
+    this.updateModalOpen = this.updateModalOpen.bind(this);
+    this.updateModalClose = this.updateModalClose.bind(this);
+    this.updateModalChange = this.updateModalChange.bind(this);
+    this.updateModalFile = this.updateModalFile.bind(this);
   }
 
   handleOpenSnackbar(msg, severity) {
@@ -109,6 +116,61 @@ class ListBarang extends React.Component {
       this.handleOpenSnackbar("Barang telah dibuat", "success");
       this.fetchData(1);
       this.createModalClose();
+    } catch (err) {
+      this.handleOpenSnackbar(err.response.data.ErrorMessage, "error");
+    }
+  };
+
+  updateBarang(barang) {
+    this.setState({
+      id: barang.id,
+      nama: barang.nama,
+      hargaBeli: barang.hargaBeli,
+      hargaJual: barang.hargaJual,
+      stok: barang.stok,
+    });
+    this.updateModalOpen();
+  }
+
+  updateModalOpen() {
+    this.setState({
+      updateModal: true,
+    });
+  }
+
+  updateModalClose(e) {
+    this.setState({ updateModal: false });
+  }
+
+  updateModalChange(e) {
+    this.setState({
+      [e.target.name]: e.target.value,
+    });
+  }
+
+  updateModalFile(e) {
+    this.setState({ file: e.target.files[0] });
+  }
+
+  updateModalSend = async () => {
+    try {
+      const payload = new FormData();
+      payload.append("nama", this.state.nama);
+      payload.append("hargaBeli", this.state.hargaBeli);
+      payload.append("hargaJual", this.state.hargaJual);
+      payload.append("stok", this.state.stok);
+      payload.append("foto", this.state.file);
+
+      await axios.put(API_ROOT + "/barang/" + this.state.id, payload, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: "Bearer " + localStorage.jwt_token,
+        },
+      });
+
+      this.handleOpenSnackbar("Barang telah terupdate", "success");
+      this.fetchData(1);
+      this.updateModalClose();
     } catch (err) {
       this.handleOpenSnackbar(err.response.data.ErrorMessage, "error");
     }
@@ -173,7 +235,7 @@ class ListBarang extends React.Component {
                     </CardContent>
                   </CardActionArea>
                   <CardActions>
-                    <Button>
+                    <Button onClick={() => this.updateBarang(barang)}>
                       <Edit />
                     </Button>
                     <Button onClick={() => this.deleteBarang(barang.id)}>
@@ -281,6 +343,111 @@ class ListBarang extends React.Component {
                 <Button variant="outlined" onClick={this.createModalSend}>
                   <AddCircle />
                   Tambah barang
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+        </Modal>
+
+        <Modal open={this.state.updateModal} onClose={this.updateModalClose}>
+          <Box sx={{ ...modalStyle, width: "500px", backgroundColor: "white" }}>
+            <Grid container spacing={2} sx={{ margin: "20px" }}>
+              <Grid item>
+                <Grid container justify="space-between" spacing={8}>
+                  <Grid item>
+                    <Typography
+                      variant="h6"
+                      display="inline"
+                      sx={{ marginRight: "5px" }}
+                    >
+                      Nama barang
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      name="nama"
+                      label="Nama barang"
+                      variant="outlined"
+                      sx={{ marginRight: "5px" }}
+                      onChange={this.updateModalChange}
+                      defaultValue={this.state.nama}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid item>
+                <Grid container justify="space-between" spacing={12}>
+                  <Grid item>
+                    <Typography variant="h6" display="inline" width="100px">
+                      Harga beli
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      name="hargaBeli"
+                      label="Harga beli"
+                      variant="outlined"
+                      sx={{ marginRight: "5px" }}
+                      onChange={this.updateModalChange}
+                      defaultValue={this.state.hargaBeli}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid item>
+                <Grid container justify="space-between" spacing={12}>
+                  <Grid item>
+                    <Typography variant="h6" display="inline" width="100px">
+                      Harga jual
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      name="hargaJual"
+                      label="Harga jual"
+                      variant="outlined"
+                      sx={{ marginRight: "5px" }}
+                      onChange={this.updateModalChange}
+                      defaultValue={this.state.hargaJual}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid item>
+                <Grid container justify="space-between" spacing={18}>
+                  <Grid item>
+                    <Typography variant="h6" display="inline" width="100px">
+                      Stok
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      name="stok"
+                      label="Stok"
+                      variant="outlined"
+                      sx={{ marginRight: "5px" }}
+                      onChange={this.updateModalChange}
+                      defaultValue={this.state.stok}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid item>
+                <Grid container justify="space-between" spacing={10}>
+                  <Grid item>
+                    <Typography variant="h6" display="inline" width="100px">
+                      Foto barang
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                    <input type="file" onChange={this.updateModalFile} />
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid item>
+                <Button variant="outlined" onClick={this.updateModalSend}>
+                  <AddCircle />
+                  Edit barang
                 </Button>
               </Grid>
             </Grid>
