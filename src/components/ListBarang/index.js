@@ -13,6 +13,8 @@ import {
   Alert,
   Modal,
   TextField,
+  Pagination,
+  Stack,
 } from "@mui/material";
 import axios from "axios";
 import { AddCircle, Edit, HighlightOff } from "@mui/icons-material";
@@ -47,10 +49,13 @@ class ListBarang extends React.Component {
       hargaJual: "",
       stok: "",
       file: "",
+
+      page: 1,
+      totalPage: 1,
     };
 
     this.fetchData = this.fetchData.bind(this);
-    this.fetchData(1);
+    this.fetchData();
 
     this.handleOpenSnackbar = this.handleOpenSnackbar.bind(this);
     this.handleCloseSnackbar = this.handleCloseSnackbar.bind(this);
@@ -64,6 +69,9 @@ class ListBarang extends React.Component {
     this.updateModalClose = this.updateModalClose.bind(this);
     this.updateModalChange = this.updateModalChange.bind(this);
     this.updateModalFile = this.updateModalFile.bind(this);
+
+    this.changePage = this.changePage.bind(this);
+    this.onPaginationChange = this.onPaginationChange.bind(this);
   }
 
   handleOpenSnackbar(msg, severity) {
@@ -114,12 +122,16 @@ class ListBarang extends React.Component {
         },
       });
       this.handleOpenSnackbar("Barang telah dibuat", "success");
-      this.fetchData(1);
+      this.changePage(1);
       this.createModalClose();
     } catch (err) {
       this.handleOpenSnackbar(err.response.data.ErrorMessage, "error");
     }
   };
+
+  changePage(n) {
+    this.setState({ page: n }, () => this.fetchData());
+  }
 
   updateBarang(barang) {
     this.setState({
@@ -169,7 +181,7 @@ class ListBarang extends React.Component {
       });
 
       this.handleOpenSnackbar("Barang telah terupdate", "success");
-      this.fetchData(1);
+      this.fetchData();
       this.updateModalClose();
     } catch (err) {
       this.handleOpenSnackbar(err.response.data.ErrorMessage, "error");
@@ -185,25 +197,48 @@ class ListBarang extends React.Component {
       });
 
       this.handleOpenSnackbar("Barang telah dihapus", "success");
-      this.fetchData(1);
+      this.fetchData();
     } catch (err) {
       this.handleOpenSnackbar(err.response.data.ErrorMessage, "error");
     }
   };
 
-  async fetchData(page) {
-    const data = await axios.get(API_ROOT + "/barang?limit=9&page=" + page);
-    this.setState({ barangList: data.data.data });
+  async fetchData() {
+    const data = await axios.get(
+      API_ROOT + "/barang?limit=9&page=" + this.state.page
+    );
+    this.setState({
+      barangList: data.data.data,
+      totalPage: data.data.totalPage,
+    });
+  }
+
+  onPaginationChange(e, v) {
+    this.changePage(v);
   }
 
   render() {
     return (
       <div>
-        <Container maxWidth="lg" sx={{ marginTop: "50px" }}>
+        <Container
+          maxWidth="lg"
+          sx={{ marginTop: "50px", marginBottom: "50px" }}
+        >
           <Button variant="outlined" onClick={this.createModalOpen}>
             <AddCircle />
             Tambah barang
           </Button>
+          <Container justify="center">
+            <Stack spacing={2}>
+              <Pagination
+                count={this.state.totalPage}
+                showFirstButton
+                showLastButton
+                sx={{ justifyContent: "center", display: "flex" }}
+                onChange={this.onPaginationChange}
+              />
+            </Stack>
+          </Container>
           <Grid container spacing={4} sx={{ marginTop: "5px" }}>
             {this.state.barangList.map((barang) => (
               <Grid item xs={4}>
